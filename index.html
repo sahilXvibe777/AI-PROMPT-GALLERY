@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROMPT MATRIX | Premium AI Image Prompt Gallery</title>
+<meta name="description" content="PROMPT MATRIX is a free gallery of ready-to-copy AI image prompts for ChatGPT, Midjourney, DALL-E 3, Flux and Leonardo AI.">
+<meta name="theme-color" content="#07040f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Syncopate:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="bgimg" aria-hidden="true"></div>
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+<div id="progress"></div>
+<header class="top"><div class="bar">
+  <a class="logo" href="#top">PROMPT MATRIX</a>
+  <button id="burger" aria-label="Menu" aria-expanded="false" aria-controls="nav">☰</button>
+  <nav id="nav" aria-label="Main">
+    <a href="#gallery">Gallery</a><a href="#today">Prompt of the Day</a><a href="#guide">Guide</a><a href="#feedback">Feedback</a><a href="about.html">About Us</a><a href="contact.html">Contact</a>
+  </nav>
+</div></header>
+
+<main id="top" class="wrap">
+  <div class="hero rv">
+    <h1>Prompt Matrix</h1>
+    <p class="sub">Premium, copy-ready prompts for AI image generation. Search, favourite and copy in one tap.</p>
+    <div class="search" id="sbox">
+      <input id="q" type="search" placeholder="Search prompts, styles, keywords…" aria-label="Search prompts" autocomplete="off">
+      <button id="clr" aria-label="Clear search">✕</button>
+    </div>
+  </div>
+
+  <section id="today" class="two">
+    <div class="glass rv"><h2 class="sec">Prompt of the Day</h2><div id="potd"></div></div>
+    <div class="glass rv"><h2 class="sec">Quick Tools</h2>
+      <button class="btn" id="rand">🎲 Random Prompt</button>
+      <p class="note" style="margin-top:16px">Recently copied</p>
+      <div class="mini" id="recent"><span class="note">Nothing copied yet.</span></div>
+    </div>
+  </section>
+
+  <section id="gallery">
+    <h2 class="sec rv">Prompt Gallery</h2>
+    <div class="chips rv" id="chips" role="group" aria-label="Categories"></div>
+    <div class="status"><div>Showing <b id="vis">0</b> of <b id="tot">0</b> prompts</div><div id="flabel"></div></div>
+    <div class="grid" id="grid" aria-live="polite"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
+    <div class="more"><button class="btn alt" id="more" hidden>Load more</button></div>
+  </section>
+
+  <section id="guide" class="glass rv">
+    <h2 class="sec">How to get the best results</h2>
+    <ul class="tips">
+      <li><b>Tools:</b> works with ChatGPT image generation, Midjourney, DALL-E 3, Flux.1 and Leonardo AI.</li>
+      <li><b>Ratio:</b> in Midjourney add <code>--ar 16:9</code> for wallpapers or <code>--ar 9:16</code> for reels. In ChatGPT just say "wide" or "vertical".</li>
+      <li><b>Customise:</b> swap outfits, colours or subjects to match your idea.</li>
+      <li><b>Favourites:</b> tap ♡ on a card and use the ♥ Favourites filter. Saved in this browser.</li>
+    </ul>
+  </section>
+
+  <section id="feedback" class="glass rv">
+    <h2 class="sec">Community Feedback</h2>
+    <form class="cform" id="cf">
+      <input id="cn" maxlength="40" placeholder="Your name / handle" required>
+      <textarea id="ct" maxlength="500" placeholder="Share feedback or suggest new prompts…" required></textarea>
+      <button class="btn" style="justify-self:end">Post Comment</button>
+    </form>
+    <p class="note" style="margin-bottom:14px">Comments are stored only in your own browser (localStorage). Other visitors cannot see them.</p>
+    <div class="clist" id="cl"></div>
+  </section>
+</main>
+
+<footer>
+  <nav aria-label="Footer"><a href="#gallery">Gallery</a><a href="#guide">Guide</a><a href="#feedback">Feedback</a><a href="about.html">About Us</a><a href="contact.html">Contact</a></nav>
+  <p>© PROMPT MATRIX — free AI prompt hub.</p>
+</footer>
+
+<dialog id="dlg" aria-labelledby="dt"></dialog>
+<div id="toast" role="status"></div>
+<button id="toTop" aria-label="Back to top">↑</button>
+
+<script src="prompts.js"></script>
+<script src="main.js"></script>
+<script>
+const PAGE = 24;
+const ALL = PROMPTS.map((a, i) => ({ id: i + 1, t: a[0], c: a[1], p: a[2] }));
+const cats = [...new Set(ALL.map(x => x.c))];
+const $ = s => document.querySelector(s);
+let cat = 'ALL', q = '', favOnly = false, shown = PAGE;
+let favs = new Set(LS('pm_favs', []));
+let recent = LS('pm_recent', []);
+const hue = c => [...c].reduce((a, ch) => a + ch.charCodeAt(0), 0) * 7 % 360;
+const byId = id => ALL.find(x => x.id === id);
+
+function chips() {
+  const n = c => ALL.filter(x => x.c === c).length;
+  $('#chips').innerHTML =
+    `<button class="chip ${cat==='ALL'&&!favOnly?'on':''}" data-c="ALL">All<small>${ALL.length}</small></button>` +
+    `<button class="chip ${favOnly?'on':''}" data-fav="1">♥ Favourites<small>${favs.size}</small></button>` +
+    cats.map(c => `<button class="chip ${cat===c&&!favOnly?'on':''}" data-c="${esc(c)}">${esc(c)}<small>${n(c)}</small></button>`).join('');
+}
+function list() {
+  const s = q.toLowerCase();
+  return ALL.filter(x => (favOnly ? favs.has(x.id) : (cat === 'ALL' || x.c === cat)) &&
+    (!s || (x.t + ' ' + x.c + ' ' + x.p).toLowerCase().includes(s)));
+}
+function card(x) {
+  const on = favs.has(x.id);
+  return `<article class="card rv" data-id="${x.id}">
+    <div class="thumb" style="--h:${hue(x.c)}"><span class="tag">${esc(x.c)}</span>
+      <button class="fav ${on?'on':''}" data-act="fav" aria-pressed="${on}" aria-label="Favourite">${on?'♥':'♡'}</button>
+      <span class="tt">${esc(x.t)}</span></div>
+    <div class="cb"><p class="pr">${esc(x.p)}</p>
+      <div class="row"><button class="btn" data-act="copy">Copy Prompt</button>
+      <button class="ib" data-act="view" aria-label="Details">⤢</button>
+      <button class="ib" data-act="share" aria-label="Share">↗</button></div></div></article>`;
+}
+function render() {
+  const l = list();
+  $('#vis').textContent = l.length; $('#tot').textContent = ALL.length;
+  $('#flabel').textContent = 'Filter: ' + (favOnly ? 'FAVOURITES' : cat);
+  $('#grid').innerHTML = l.length ? l.slice(0, shown).map(card).join('') :
+    `<div class="empty"><b>⚠</b><h3>No prompts found</h3><p>${favOnly && !favs.size ? 'Tap ♡ on any card to save favourites.' : 'Try another keyword or category.'}</p></div>`;
+  $('#more').hidden = l.length <= shown;
+  $('#more').textContent = `Load more (${l.length - shown} left)`;
+  $('#sbox').classList.toggle('has', !!q);
+  chips(); reveal($('#grid'));
+}
+function potd() {
+  const x = ALL[Math.floor(Date.now() / 864e5) % ALL.length];
+  $('#potd').innerHTML = `<span class="tag" style="position:static;display:inline-block">${esc(x.c)}</span><h3 style="margin:10px 0">${esc(x.t)}</h3><p style="color:#cfc9e4">${esc(x.p)}</p><div class="row" style="margin-top:14px" data-id="${x.id}"><button class="btn" data-act="copy">Copy Prompt</button></div>`;
+}
+function recents() {
+  $('#recent').innerHTML = recent.length ? recent.map(id => byId(id)).filter(Boolean)
+    .map(x => `<button data-id="${x.id}" data-act="view" title="${esc(x.t)}">${esc(x.t)}</button>`).join('') : '<span class="note">Nothing copied yet.</span>';
+}
+async function copy(x) {
+  let ok = false;
+  try { await navigator.clipboard.writeText(x.p); ok = true; }
+  catch (e) {
+    const t = document.createElement('textarea'); t.value = x.p; t.style.cssText = 'position:fixed;opacity:0';
+    document.body.append(t); t.select();
+    try { ok = document.execCommand('copy'); } catch (e2) {}
+    t.remove();
+  }
+  if (!ok) return toast('Copy blocked — open Details and select the text manually');
+  recent = [x.id, ...recent.filter(i => i !== x.id)].slice(0, 6); SV('pm_recent', recent); recents();
+  toast('Prompt copied to clipboard!');
+}
+function fav(id) {
+  favs.has(id) ? favs.delete(id) : favs.add(id); SV('pm_favs', [...favs]);
+  toast(favs.has(id) ? 'Added to favourites' : 'Removed from favourites'); render();
+}
+async function share(x) {
+  const d = { title: 'PROMPT MATRIX — ' + x.t, text: x.p, url: location.href.split('#')[0] };
+  if (navigator.share) { try { await navigator.share(d); } catch (e) {} }
+  else copy(x);
+}
+function view(x) {
+  const d = $('#dlg');
+  d.innerHTML = `<span class="tag" style="position:static;display:inline-block">${esc(x.c)}</span><h3 id="dt">${esc(x.t)}</h3><p>${esc(x.p)}</p>
+    <div class="row" data-id="${x.id}"><button class="btn" data-act="copy">Copy</button><button class="btn alt" data-act="fav">${favs.has(x.id)?'♥ Saved':'♡ Favourite'}</button><button class="btn alt" data-act="share">Share</button><button class="btn alt" id="x">Close</button></div>`;
+  d.showModal();
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const host = b.closest('[data-id]'); const x = host && byId(+host.dataset.id); if (!x) return;
+  const a = b.dataset.act;
+  if (a === 'copy') copy(x); else if (a === 'fav') { fav(x.id); if ($('#dlg').open) view(x); }
+  else if (a === 'share') share(x); else if (a === 'view') view(x);
+});
+$('#dlg').addEventListener('click', e => { if (e.target.id === 'x' || e.target === e.currentTarget) e.currentTarget.close(); });
+$('#chips').addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  favOnly = !!b.dataset.fav; cat = b.dataset.c || 'ALL'; shown = PAGE; render();
+});
+$('#q').addEventListener('input', e => { q = e.target.value.trim(); shown = PAGE; render(); });
+$('#clr').onclick = () => { $('#q').value = ''; q = ''; shown = PAGE; render(); $('#q').focus(); };
+$('#more').onclick = () => { shown += PAGE; render(); };
+$('#rand').onclick = () => view(ALL[Math.floor(Math.random() * ALL.length)]);
+
+// Comments (browser-only)
+function comments() {
+  const c = LS('pm_comments', []);
+  $('#cl').innerHTML = c.length ? c.map(x => `<div class="ci"><b>${esc(x.n)}</b><small>${esc(x.d)}</small><p>${esc(x.t)}</p></div>`).join('') : '<p class="note">No comments yet. Be the first!</p>';
+}
+$('#cf').addEventListener('submit', e => {
+  e.preventDefault();
+  const n = $('#cn').value.trim(), t = $('#ct').value.trim(); if (!n || !t) return;
+  const c = LS('pm_comments', []); c.unshift({ n, t, d: new Date().toLocaleString() });
+  SV('pm_comments', c.slice(0, 50)); e.target.reset(); comments(); toast('Comment saved in this browser');
+});
+render(); potd(); recents(); comments();
+</script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contact Us | Create Your Own Website | PROMPT MATRIX</title>
+<meta name="description" content="Want your own website? Contact PROMPT MATRIX to get a fast, modern, mobile-friendly website built for you.">
+<meta name="theme-color" content="#07040f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Syncopate:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="bgimg b2" aria-hidden="true"></div>
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+<div id="progress"></div>
+<header class="top"><div class="bar">
+  <a class="logo" href="index.html">PROMPT MATRIX</a>
+  <button id="burger" aria-label="Menu" aria-expanded="false" aria-controls="nav">☰</button>
+  <nav id="nav" aria-label="Main">
+    <a href="index.html#gallery">Gallery</a><a href="index.html#today">Prompt of the Day</a><a href="index.html#guide">Guide</a><a href="index.html#feedback">Feedback</a><a href="about.html">About Us</a><a class="on" href="contact.html">Contact</a>
+  </nav>
+</div></header>
+
+<main class="wrap">
+  <div class="hero"><h1>Contact Us</h1>
+    <p class="sub">Want your own website? Tell us your idea and we will build a fast, modern, mobile-friendly site for you.</p></div>
+
+  <section class="rv"><h2 class="sec">Create Your Own Website</h2>
+    <div class="svc">
+      <div class="glass rv left"><h3>Portfolio</h3><p>Show your work, skills and projects with a clean personal site.</p></div>
+      <div class="glass rv zoom"><h3>Business / Landing Page</h3><p>A sharp page for your shop, service or product that turns visitors into customers.</p></div>
+      <div class="glass rv right"><h3>Gallery &amp; Hub Sites</h3><p>Searchable galleries and hubs like PROMPT MATRIX, with favourites and filters.</p></div>
+    </div></section>
+
+  <section class="glass rv"><h2 class="sec">How It Works</h2>
+    <ol class="steps"><li><b>Tell us your idea.</b> Fill the form below.</li><li><b>We plan the design.</b> Layout, colours and pages.</li><li><b>We build it.</b> Responsive, fast and animated.</li><li><b>You go live.</b> Hosted on GitHub Pages or any host you like.</li></ol></section>
+
+  <section class="glass rv" id="form"><h2 class="sec">Send Your Request</h2>
+    <form class="cform" id="wf">
+      <input id="n" maxlength="60" placeholder="Your name" required>
+      <input id="c" maxlength="80" placeholder="Your email or WhatsApp number" required>
+      <select id="t" aria-label="Website type"><option>Portfolio website</option><option>Business / landing page</option><option>Gallery / hub website</option><option>Something else</option></select>
+      <textarea id="m" maxlength="800" placeholder="Describe the website you want…" required></textarea>
+      <button class="btn" style="justify-self:end">Send Request</button>
+    </form>
+    <p class="note">This site has no backend. The button opens your email app with the message ready to send. If it does not open, the message is copied so you can paste it anywhere.</p>
+  </section>
+</main>
+
+<footer>
+  <nav aria-label="Footer"><a href="index.html#gallery">Gallery</a><a href="index.html#guide">Guide</a><a href="index.html#feedback">Feedback</a><a href="about.html">About Us</a><a href="contact.html">Contact</a></nav>
+  <p>© PROMPT MATRIX — free AI prompt hub.</p>
+</footer>
+<div id="toast" role="status"></div>
+<button id="toTop" aria-label="Back to top">↑</button>
+<script src="main.js"></script>
+<script>
+const CONTACT_EMAIL = ''; // yahan naya email daalna hai
+document.getElementById('wf').addEventListener('submit', async e => {
+  e.preventDefault();
+  const v = id => document.getElementById(id).value.trim();
+  const body = 'Name: ' + v('n') + '\nContact: ' + v('c') + '\nType: ' + v('t') + '\n\n' + v('m');
+  try { await navigator.clipboard.writeText(body); } catch (x) {}
+  if (CONTACT_EMAIL) { location.href = 'mailto:' + CONTACT_EMAIL + '?subject=' + encodeURIComponent('Website request') + '&body=' + encodeURIComponent(body); toast('Opening your email app…'); }
+  else toast('Message copied — paste it to us');
+  e.target.reset();
+});
+</script>
+</body>
+</html>
